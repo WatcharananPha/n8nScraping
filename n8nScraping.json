@@ -1,0 +1,306 @@
+{
+  "name": "n8nScraping",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        2760,
+        -40
+      ],
+      "id": "8f7209bc-a93f-46ac-bcbf-e86c3084c4a6",
+      "name": "Start Workflow"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Cookie",
+              "value": "={{ $items(\"Visit Homepage to Get Cookies1\")[0].json.headers[\"set-cookie\"].join('; ') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6aea346f-1aa3-4e7e-ae30-607cfd3f7d2b",
+      "name": "Scrape Each URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3460,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const csvContent = `\nhttps://www.dataforthai.com/company/0273564000672/\nhttps://www.dataforthai.com/company/0653564000709/\nhttps://www.dataforthai.com/company/0305564004482/\nhttps://www.dataforthai.com/business/objective/20111\nhttps://www.dataforthai.com/company/0105514005240/\n`;\n\n\nconst urls = csvContent.split('\\n').filter(line => line.trim() !== '');\n\nreturn urls.map(url => {\n  return {\n    json: {\n      url: url.trim()\n    }\n  };\n});"
+      },
+      "id": "9244be6c-5b1d-44f5-bad6-b36bbdad3931",
+      "name": "Input URLs Here",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3240,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.dataforthai.com/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "5149ebe1-92bf-42c1-b9c4-765b483e7d14",
+      "name": "Visit Homepage to Get Cookies1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3020,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "fileFormat": "csv",
+        "options": {}
+      },
+      "id": "c45264e1-c91f-4a72-beb9-2c70ed8b77c6",
+      "name": "Create CSV File1",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [
+        3920,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "company_name_th",
+              "cssSelector": "div#maindata > h2"
+            },
+            {
+              "key": "company_name_en",
+              "cssSelector": "div#maindata > h3"
+            },
+            {
+              "key": "registration_number",
+              "cssSelector": "td:contains('เลขทะเบียน') + td"
+            },
+            {
+              "key": "business_type",
+              "cssSelector": "td:contains('ประกอบธุรกิจ') + td"
+            },
+            {
+              "key": "status",
+              "cssSelector": "td:contains('สถานะ') + td"
+            },
+            {
+              "key": "registration_date",
+              "cssSelector": "td:contains('วันที่จดทะเบียน') + td"
+            },
+            {
+              "key": "registered_capital",
+              "cssSelector": "td:contains('ทุนจดทะเบียน') + td"
+            },
+            {
+              "key": "address",
+              "cssSelector": "td:contains('ที่ตั้ง') + td > a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "af0d536c-196b-4301-b45e-e9daa2e7027d",
+      "name": "Extract Company Details2",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3680,
+        100
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start Workflow": {
+      "main": [
+        [
+          {
+            "node": "Visit Homepage to Get Cookies1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract the objective": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visit Homepage": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Each URL": {
+      "main": [
+        [
+          {
+            "node": "Extract Company Details2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input URLs Here": {
+      "main": [
+        [
+          {
+            "node": "Scrape Each URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visit Homepage to Get Cookies1": {
+      "main": [
+        [
+          {
+            "node": "Input URLs Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Company Details2": {
+      "main": [
+        [
+          {
+            "node": "Create CSV File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4c865d85-4c0d-41fa-9947-c5bb4cad0048",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25f98133425c28bbb07dc796f874403308940578ef266cd0854b0929e8307069"
+  },
+  "id": "ynjtf8gulEdbZNHf",
+  "tags": []
+}
